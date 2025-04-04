@@ -1,0 +1,6 @@
+Flask
+pandas
+transformers
+torch
+chromadb
+json

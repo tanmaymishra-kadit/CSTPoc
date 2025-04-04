@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Protein Search</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Protein Search</h1>
+        <input type="text" id="searchInput" placeholder="Enter protein or gene name...">
+        <button onclick="searchProtein()">Search</button>
+        <div id="results"></div>
+    </div>
+
+    <script>
+        async function searchProtein() {
+            let query = document.getElementById("searchInput").value.trim();
+            if (!query) {
+                alert("Please enter a search term.");
+                return;
+            }
+
+            try {
+                const response = await fetch("http://127.0.0.1:5000/search", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ query: query })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Error: ${response.status} ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                let resultDiv = document.getElementById("results");
+                resultDiv.innerHTML = "";
+
+                if (data.results.length === 0) {
+                    resultDiv.innerHTML = "<p>No matching results found.</p>";
+                    return;
+                }
+
+                data.results.forEach(protein => {
+                    let item = document.createElement("div");
+                    item.classList.add("protein-card");
+                    item.innerHTML = `
+                        <h3>${protein.protein} (${protein.gene})</h3>
+                        <p><strong>UniProt ID:</strong> ${protein.uniprot}</p>
+                        <p><strong>Synonyms:</strong> ${protein.synonyms.join(", ")}</p>
+                    `;
+                    resultDiv.appendChild(item);
+                });
+
+            } catch (error) {
+                console.error("Error:", error);
+                alert("Failed to fetch results. Check if the backend is running.");
+            }
+        }
+    </script>
+</body>
+</html>
